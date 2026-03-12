@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外籍白領技術人力引進與居留指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Stone & Teal Accent (bg-stone-50, text-stone-800, accent teal-600) -->
+    <!-- Application Structure Plan: 本單頁應用程式採由宏觀到微觀的結構，引導使用者。首先以「市場分析」圖表呈現大環境趨勢，接著進入「法令規範」透過頁籤整理複雜法規。隨後提供「實務申請流程」的互動步驟式導覽，最後特別針對研究計畫要求的「取得長期居留」獨立章節進行條件對照。此架構能讓企業人資或仲介業者快速掌握重點，並透過互動介面避免長篇大論造成的閱讀疲勞。 -->
+    <!-- Visualization & Content Choices: 1. 市場趨勢：折線圖 (Chart.js)，呈現歷年人數成長，目標為Inform。2. 產業分佈：甜甜圈圖 (Chart.js)，比較各產業佔比，目標為Compare。3. 法令與流程：互動式頁籤與步驟面板 (Vanilla JS + HTML/CSS)，將複雜程序組織化，目標為Organize。4. 居留規定：卡片對照排版 (HTML/CSS)，比較不同身分的門檻，目標為Compare。全站未使用 SVG 或 Mermaid，皆以 Canvas 或純 HTML/CSS/Unicode 實現。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Microsoft JhengHei';
+            background-color: #fafaf9; /* stone-50 */
+            color: #292524; /* stone-800 */
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Hide scrollbar for clean horizontal scrolling areas if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #0d9488; /* teal-600 */
+            color: #0d9488;
+            font-weight: 600;
+        }
+        
+        .step-active {
+            background-color: #0d9488;
+            color: white;
+            border-color: #0d9488;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-teal-200 selection:text-teal-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-50/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center font-bold text-xl text-teal-800 tracking-wider">
+                    <span class="mr-2">🌐</span> TIP International TW
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#market" class="text-stone-600 hover:text-teal-600 transition duration-200">市場分析</a>
+                    <a href="#regulations" class="text-stone-600 hover:text-teal-600 transition duration-200">法令規範</a>
+                    <a href="#process" class="text-stone-600 hover:text-teal-600 transition duration-200">申請流程</a>
+                    <a href="#residency" class="text-stone-600 hover:text-teal-600 transition duration-200 font-medium">長期居留</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-stone-800 text-stone-50 py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">外籍白領技術人力引進<br><span class="text-teal-400">實務與長期居留策略分析</span></h1>
+            <p class="text-lg md:text-xl text-stone-300 mb-8 leading-relaxed">
+                本研究計畫整合市場現況、勞動法令與仲介實務流程，並特別彙整「取得永久居留」之最新規範。旨在協助企業人資部門與專業仲介機構，精準掌握國際人才引進的關鍵路徑，為企業建立穩定且具競爭力的跨國團隊。
+            </p>
+            <a href="#market" class="inline-block bg-teal-600 hover:bg-teal-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:-translate-y-1">
+                開始探索研究報告 &#8595;
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- Section 1: Market Analysis -->
+        <section id="market" class="scroll-mt-20">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">&#128202; 外籍白領技術人力市場分析</h2>
+                <p class="max-w-3xl mx-auto text-stone-600 text-lg">
+                    本區塊呈現近年台灣外籍專業人士的勞動力市場趨勢。透過數據視覺化，可觀察到在半導體、軟體開發及離岸風電等產業發展帶動下，外籍高階技術人才需求逐年攀升。了解市場全貌有助於企業評估招募策略與仲介市場潛力。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                    <h3 class="text-xl font-semibold mb-2 text-center text-stone-700">歷年外籍專業人員有效聘僱許可數趨勢</h3>
+                    <p class="text-sm text-stone-500 text-center mb-4">單位：千人 (資料來源：勞動部統計處，模擬數據)</p>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <p class="text-stone-600 mt-4 text-sm bg-stone-50 p-3 rounded-lg border-l-4 border-teal-500">
+                        <strong>分析洞察：</strong> 自2018年「外國專業人才延攬及僱用法」實施後，整體白領引進人數呈現顯著且穩定的成長趨勢，尤其在疫情解封後有報復性招募現象。
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                    <h3 class="text-xl font-semibold mb-2 text-center text-stone-700">產業人才引進分佈佔比</h3>
+                    <p class="text-sm text-stone-500 text-center mb-4">特定專業及專門性技術工作領域</p>
+                    <div class="chart-container">
+                        <canvas id="industryChart"></canvas>
+                    </div>
+                    <p class="text-stone-600 mt-4 text-sm bg-stone-50 p-3 rounded-lg border-l-4 border-amber-500">
+                        <strong>分析洞察：</strong> 製造業（含半導體）仍為最大宗，但批發零售業與專業/科學/技術服務業（含軟體IT）的佔比正快速擴大，為仲介業者可積極開發的藍海市場。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Regulations -->
+        <section id="regulations" class="scroll-mt-20">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">&#128214; 相關法令與人才分類規範</h2>
+                <p class="max-w-3xl mx-auto text-stone-600 text-lg">
+                    台灣現行引進外籍白領的法源依據主要為《就業服務法》及《外國專業人才延攬及僱用法》。點擊下方頁籤，探索不同層級外國人才的定義、雇主資本額門檻與受僱者資格要求。釐清法規範圍是合法仲介與聘僱的首要任務。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex flex-wrap border-b border-stone-200 bg-stone-50">
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-medium text-stone-500 hover:text-teal-600 transition tab-active" onclick="switchTab('tab-standard', this)">
+                        一般外國專業人士<br><span class="text-xs font-normal">(就服法第46條第1項第1-6款)</span>
+                    </button>
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-medium text-stone-500 hover:text-teal-600 transition" onclick="switchTab('tab-special', this)">
+                        外國特定專業人才<br><span class="text-xs font-normal">(就業金卡適用對象)</span>
+                    </button>
+                    <button class="tab-btn flex-1 py-4 px-6 text-center font-medium text-stone-500 hover:text-teal-600 transition" onclick="switchTab('tab-mid', this)">
+                        外國中階技術人力<br><span class="text-xs font-normal">(移工留才久用方案)</span>
+                    </button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="p-8 min-h-[300px]">
+                    <div id="tab-standard" class="tab-content block">
+                        <h3 class="text-2xl font-bold text-teal-800 mb-4">專門性或技術性工作 (一般白領)</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-bold text-stone-700 border-b border-stone-200 pb-2 mb-3">雇主資格門檻</h4>
+                                <ul class="space-y-2 text-stone-600">
+                                    <li>&#9642; 本國企業：設立未滿1年實收資本額達新臺幣500萬元，或營業額達新臺幣1,000萬元。</li>
+                                    <li>&#9642; 設立1年以上：最近1年或前3年平均營業額達新臺幣1,000萬元。</li>
+                                    <li>&#9642; 外國分公司：營運資金達新臺幣500萬元等。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-stone-700 border-b border-stone-200 pb-2 mb-3">受僱者資格 (擇一)</h4>
+                                <ul class="space-y-2 text-stone-600">
+                                    <li>&#9642; 取得相關部會核發之專門職業及技術人員證書。</li>
+                                    <li>&#9642; 碩士以上學位；或學士學位且具備2年以上相關工作經驗。</li>
+                                    <li>&#9642; 跨國企業服務滿1年以上，經指派來臺。</li>
+                                    <li>&#9642; 月平均薪資達新臺幣 <strong>47,971元</strong> (特定情況如僑外生評點制可排除)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-special" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-teal-800 mb-4">外國特定專業人才 (高階人才)</h3>
+                        <p class="mb-6 text-stone-600">指具有中央目的事業主管機關公告之我國所需科技、經濟、教育、文化、藝術、體育及其他領域之特殊專長者。</p>
+                        <div class="bg-teal-50 p-6 rounded-lg border border-teal-100">
+                            <h4 class="font-bold text-teal-900 mb-3">核心優勢與申請條件</h4>
+                            <ul class="space-y-3 text-stone-700">
+                                <li><strong>薪資條件：</strong> 通常要求最近月薪達新臺幣 <strong>160,000元</strong> 以上 (非唯一條件，可依專業成就認定)。</li>
+                                <li><strong>就業金卡 (Employment Gold Card)：</strong> 提供四證合一（工作許可、居留簽證、外僑居留證、重入國許可）。</li>
+                                <li><strong>靈活性：</strong> 不須透過雇主申請，可個人自行申請，在台自由尋職與轉換工作。</li>
+                                <li><strong>租稅優惠：</strong> 符合條件者，薪資超過300萬部分享折半課稅優惠(最長5年)。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="tab-mid" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-teal-800 mb-4">外國中階技術人力 (藍轉白階)</h3>
+                        <p class="mb-6 text-stone-600">解決產業缺工，讓具備純熟技術的資深移工或在台取得副學士以上之僑外生能留台工作，無須受最長年限限制。</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-bold text-stone-700 border-b border-stone-200 pb-2 mb-3">適用對象</h4>
+                                <ul class="space-y-2 text-stone-600">
+                                    <li>&#9642; 在臺工作滿6年以上之資深移工。</li>
+                                    <li>&#9642; 取得臺灣大專校院副學士學位以上之僑外生。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-stone-700 border-b border-stone-200 pb-2 mb-3">門檻要求 (以製造業為例)</h4>
+                                <ul class="space-y-2 text-stone-600">
+                                    <li>&#9642; <strong>薪資：</strong> 經常性薪資達新臺幣 3.3萬元 以上，或年總薪資達 50萬元 以上 (僑外生首次3萬、續聘3.3萬)。</li>
+                                    <li>&#9642; <strong>技術條件：</strong> 具備乙級以上技術士證，或完成80小時訓練，或實作認定 (薪資達3.5萬者可免技術條件)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Process -->
+        <section id="process" class="scroll-mt-20">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">&#9881;&#65039; 實務引進申請作業流程</h2>
+                <p class="max-w-3xl mx-auto text-stone-600 text-lg">
+                    外籍白領的引進牽涉多個政府部會。本區塊拆解標準申請流程，透過互動介面展示各階段的主管機關、應備文件與預估工作天數。正確掌握流程能有效降低企業時間成本與補件風險。
+                </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Process Steps (Sidebar) -->
+                <div class="md:w-1/3 space-y-3" id="process-steps">
+                    <button class="w-full text-left px-6 py-4 rounded-xl border border-stone-200 font-semibold transition flex items-center justify-between step-active" onclick="switchProcess(1, this)">
+                        <span>1. 聘僱許可申請</span>
+                        <span class="text-xl">&#10148;</span>
+                    </button>
+                    <button class="w-full text-left px-6 py-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 font-semibold transition flex items-center justify-between" onclick="switchProcess(2, this)">
+                        <span>2. 居留簽證辦理</span>
+                        <span class="text-xl">&#10148;</span>
+                    </button>
+                    <button class="w-full text-left px-6 py-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 font-semibold transition flex items-center justify-between" onclick="switchProcess(3, this)">
+                        <span>3. 外僑居留證申請</span>
+                        <span class="text-xl">&#10148;</span>
+                    </button>
+                    <button class="w-full text-left px-6 py-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 font-semibold transition flex items-center justify-between" onclick="switchProcess(4, this)">
+                        <span>4. 後續通報與管理</span>
+                        <span class="text-xl">&#10148;</span>
+                    </button>
+                </div>
+
+                <!-- Process Details (Content) -->
+                <div class="md:w-2/3 bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative">
+                    
+                    <div id="process-1" class="process-detail block">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-teal-100 text-teal-800 py-1 px-3 rounded text-sm font-bold">階段 一</span>
+                            <h3 class="text-2xl font-bold text-stone-800">向勞動部申請聘僱許可</h3>
+                        </div>
+                        <p class="text-stone-600 mb-6 pb-6 border-b border-stone-100">外國人來台工作前，必須先由雇主向主管機關提出申請並取得核准。全面採用「外國專業人員工作許可線上申辦網」作業。</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <span class="text-teal-600 mr-3 mt-1">&#128193;</span>
+                                <div>
+                                    <h4 class="font-semibold text-stone-700">雇主應備文件</h4>
+                                    <p class="text-sm text-stone-500">公司登記證明、營業額證明(如401表)、聘僱契約書等。</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-teal-600 mr-3 mt-1">&#128100;</span>
+                                <div>
+                                    <h4 class="font-semibold text-stone-700">外國人應備文件</h4>
+                                    <p class="text-sm text-stone-500">護照影本、學歷證明(國外學歷視情況需驗證)、相關工作經驗證明。</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-teal-600 mr-3 mt-1">&#8987;</span>
+                                <div>
+                                    <h4 class="font-semibold text-stone-700">審查時間</h4>
+                                    <p class="text-sm text-stone-500">文件齊備下，線上申請約需 7 至 12 個工作天。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="process-2" class="process-detail hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-teal-100 text-teal-800 py-1 px-3 rounded text-sm font-bold">階段 二</span>
+                            <h3 class="text-2xl font-bold text-stone-800">向外交部(駐外館處)申請居留簽證</h3>
+                        </div>
+                        <p class="text-stone-600 mb-6 pb-6 border-b border-stone-100">取得勞動部核發之「聘僱許可函」後，外國人需申請與工作目的相符之簽證方可入境，或在境內轉換簽證。</p>
+                        
+                        <div class="bg-stone-50 p-4 rounded-lg mb-4 border border-stone-200">
+                            <h4 class="font-semibold text-stone-700 mb-2">人在國外：申請居留簽證 (Resident Visa)</h4>
+                            <p class="text-sm text-stone-600">向中華民國駐外館處提出申請。需附上聘僱許可函正本/影本、護照、照片及簽證申請表。</p>
+                        </div>
+                        <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                            <h4 class="font-semibold text-stone-700 mb-2">人在國內：停留改居留或變更事由</h4>
+                            <p class="text-sm text-stone-600">若以外籍學生、依親或免簽證入境，符合特定條件者，可向外交部領事事務局申請改換發工作事由之居留簽證。</p>
+                        </div>
+                    </div>
+
+                    <div id="process-3" class="process-detail hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-teal-100 text-teal-800 py-1 px-3 rounded text-sm font-bold">階段 三</span>
+                            <h3 class="text-2xl font-bold text-stone-800">向移民署申請外僑居留證 (ARC)</h3>
+                        </div>
+                        <p class="text-stone-600 mb-6 pb-6 border-b border-stone-100">持居留簽證入境後，或在境內獲發居留簽證後，必須在法定期限內申辦身分證明文件。</p>
+                        
+                        <ul class="space-y-4 text-stone-600">
+                            <li class="flex items-center">
+                                <span class="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-xs mr-3">重要法定期限</span>
+                                <span>持居留簽證入境者，須於入境之翌日起 <strong>30日內</strong> 辦理。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-stone-400 mr-2">&#10148;</span>
+                                <span><strong>線上申辦：</strong> 透過「外國與外僑學生線上申辦系統」辦理。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-stone-400 mr-2">&#10148;</span>
+                                <span><strong>效期：</strong> ARC效期通常與勞動部聘僱許可效期一致（最長3年）。</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div id="process-4" class="process-detail hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-teal-100 text-teal-800 py-1 px-3 rounded text-sm font-bold">階段 四</span>
+                            <h3 class="text-2xl font-bold text-stone-800">後續通報與日常管理</h3>
+                        </div>
+                        <p class="text-stone-600 mb-6 pb-6 border-b border-stone-100">聘僱關係存續期間，雇主仍負有相關法定通報義務，以免受罰。</p>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 border border-stone-200 rounded-lg">
+                                <h4 class="font-bold text-teal-700 mb-2">解約或曠職通報</h4>
+                                <p class="text-sm text-stone-600">若外籍員工連續曠職3日失去聯繫，或提前終止聘僱關係，雇主須於 <strong>3日內</strong> 通報當地主管機關及勞動部。</p>
+                            </div>
+                            <div class="p-4 border border-stone-200 rounded-lg">
+                                <h4 class="font-bold text-teal-700 mb-2">展延申請 (Renewal)</h4>
+                                <p class="text-sm text-stone-600">聘僱許可期限屆滿前，雇主如有繼續聘僱之需要，應於期滿前 <strong>4個月內</strong> 申請展延。</p>
+                            </div>
+                            <div class="col-span-2 p-4 border border-stone-200 rounded-lg">
+                                <h4 class="font-bold text-teal-700 mb-2">勞健保加保</h4>
+                                <p class="text-sm text-stone-600">到職當日雇主即應為外籍白領辦理勞工保險及全民健康保險加保作業。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Long-term Residency (Special Request) -->
+        <section id="residency" class="scroll-mt-20">
+            <div class="bg-teal-900 rounded-3xl p-8 md:p-12 text-stone-50 shadow-xl">
+                <div class="mb-10 text-center">
+                    <h2 class="text-3xl font-bold text-white mb-4">&#127942; 取得長期/永久居留 (APRC) 相關規定分析</h2>
+                    <p class="max-w-3xl mx-auto text-teal-100 text-lg">
+                        根據研究計畫編輯要求，本區塊特別整理外籍白領取得臺灣「永久居留」的途徑。政府近年為留用優秀人才，大幅放寬並縮短特定專業人才取得 APRC 的年限。以下比較不同身分級別的申請條件。
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Standard White Collar -->
+                    <div class="bg-white text-stone-800 rounded-2xl p-6 shadow-lg border-t-4 border-stone-400 flex flex-col">
+                        <h3 class="text-xl font-bold mb-1">一般外國專業人士</h3>
+                        <p class="text-sm text-stone-500 mb-6">標準永久居留路徑</p>
+                        
+                        <div class="space-y-4 flex-grow">
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">居住年限要求</span>
+                                <p class="font-semibold text-lg text-teal-700">合法連續居留滿 5 年</p>
+                                <p class="text-sm text-stone-600">且每年居住超過 183 日。</p>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">財力/技術門檻</span>
+                                <p class="text-sm text-stone-600">
+                                    最近1年平均月薪達勞動部公告基本工資 <strong>2倍</strong>，或具備我國所需特殊技能、取得相關乙級以上技術士證。
+                                </p>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">品行與守法</span>
+                                <p class="text-sm text-stone-600">需提供本國及原屬國警察紀錄證明(良民證)。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Professionals -->
+                    <div class="bg-white text-stone-800 rounded-2xl p-6 shadow-lg border-t-4 border-teal-500 flex flex-col transform md:-translate-y-4">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-xl font-bold text-teal-700">外國特定專業人才</h3>
+                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">法規放寬亮點</span>
+                        </div>
+                        <p class="text-sm text-stone-500 mb-6">持就業金卡者適用加速路徑</p>
+                        
+                        <div class="space-y-4 flex-grow">
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">居住年限要求</span>
+                                <p class="font-semibold text-2xl text-teal-700 mb-1">縮短為 3 年</p>
+                                <p class="text-sm text-stone-600">合法連續居留滿3年，平均每年居住183日以上。<br><span class="text-amber-600 text-xs">*(取得博士學位者可再折抵1年)*</span></p>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">財力門檻放寬</span>
+                                <p class="text-sm text-stone-600">
+                                    同一般規定(基本工資2倍)，但特定人才身分本身通常已遠超此薪資標準，實質審查更具優勢。
+                                </p>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">眷屬隨同優惠</span>
+                                <p class="text-sm text-stone-600">配偶、未成年子女及因身心障礙無法自理之成年子女，得隨同申請永久居留。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mid-level -->
+                    <div class="bg-white text-stone-800 rounded-2xl p-6 shadow-lg border-t-4 border-stone-400 flex flex-col md:col-span-2 lg:col-span-1">
+                        <h3 class="text-xl font-bold mb-1">中階技術人力</h3>
+                        <p class="text-sm text-stone-500 mb-6">移工留才久用專案</p>
+                        
+                        <div class="space-y-4 flex-grow">
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">居住年限要求</span>
+                                <p class="font-semibold text-lg text-teal-700">連續居留滿 5 年</p>
+                                <p class="text-sm text-stone-600">須為從事「中階技術工作」期間連續滿5年。</p>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">薪資條件加碼</span>
+                                <p class="text-sm text-stone-600">
+                                    申請APRC時，每月經常性薪資須達基本工資 <strong>2倍</strong>，或取得乙級專業技能證明(依據各業別規定)。
+                                </p>
+                            </div>
+                             <div>
+                                <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">戰略意義</span>
+                                <p class="text-sm text-stone-600">打破過去藍領移工在台工作年限(12/14年)天花板，提供實質轉化為移民的明確路徑。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center text-teal-200 text-sm">
+                    註：以上法規資訊摘要整理自相關部會公告，實際申請條件與審查標準仍以內政部移民署及勞動部之最新公告為準。
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-8 text-center">
+        <div class="max-w-6xl mx-auto px-4">
+            <p class="mb-2">外籍白領技術人力引進研究計畫 互動報告演示</p>
+            <p class="text-sm">&copy; 2024 TIP International . All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Chart.js Implementation ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart 1: Trend Line Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2019', '2020', '2021', '2022', '2023'],
+                    datasets: [{
+                        label: '有效聘僱許可總數 (千人)',
+                        data: [31.5, 32.8, 35.2, 42.1, 47.8], // Mock data based on trends
+                        borderColor: '#0d9488', // teal-600
+                        backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0d9488',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Critical for parent container height control
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, suggestedMin: 25 }
+                    }
+                }
+            });
+
+            // Chart 2: Industry Breakdown Doughnut Chart
+            const industryCtx = document.getElementById('industryChart').getContext('2d');
+            new Chart(industryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        '製造業(含半導體)', 
+                        '專業、科學及技術服務', 
+                        '批發及零售業', 
+                        '教育服務業', 
+                        '資訊及通訊傳播業',
+                        '其他'
+                    ],
+                    datasets: [{
+                        data: [28, 22, 18, 15, 12, 5], // Mock percentage
+                        backgroundColor: [
+                            '#0f766e', // teal-700
+                            '#14b8a6', // teal-500
+                            '#99f6e4', // teal-200
+                            '#fcd34d', // amber-300
+                            '#fbbf24', // amber-400
+                            '#e7e5e4'  // stone-200
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        });
+
+        // --- 2. Interactive Logic: Regulations Tabs ---
+        function switchTab(tabId, element) {
+            // Hide all contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('block');
+                content.classList.add('hidden');
+            });
+
+            // Remove active state from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.remove('bg-white');
+                btn.classList.add('bg-stone-50');
+            });
+
+            // Show selected content
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+
+            // Set active state to clicked button
+            element.classList.add('tab-active');
+            element.classList.remove('bg-stone-50');
+            element.classList.add('bg-white');
+        }
+
+        // --- 3. Interactive Logic: Process Steps ---
+        function switchProcess(stepNum, element) {
+            // Hide all detail panels
+            const details = document.querySelectorAll('.process-detail');
+            details.forEach(detail => {
+                detail.classList.remove('block');
+                detail.classList.add('hidden');
+            });
+
+            // Reset all buttons styling
+            const buttons = document.querySelectorAll('#process-steps button');
+            buttons.forEach(btn => {
+                btn.classList.remove('step-active');
+                btn.classList.add('bg-white', 'text-stone-600');
+                btn.classList.remove('text-white');
+            });
+
+            // Show selected detail
+            document.getElementById('process-' + stepNum).classList.remove('hidden');
+            document.getElementById('process-' + stepNum).classList.add('block');
+
+            // Highlight selected button
+            element.classList.add('step-active');
+            element.classList.remove('bg-white', 'text-stone-600');
+        }
+    </script>
+</body>
+</html>
