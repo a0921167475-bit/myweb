@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外籍白領仲介：商業模式與營運執行計畫書</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Config for Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0f172a', // slate-900
+                            primary: '#1e3a8a', // blue-900
+                            accent: '#d97706', // amber-600 (Gold Card theme)
+                            light: '#f8fafc', // slate-50
+                            muted: '#64748b' // slate-500
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for Interactive Elements & Chart Containers */
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .tab-btn { transition: all 0.3s ease; }
+        .tab-btn.active { border-bottom: 2px solid #d97706; color: #d97706; font-weight: 600; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* * CHART CONTAINER STYLING (CRITICAL REQUIREMENT)
+         * Ensures Canvas charts are strictly contained, responsive, and do not break layout.
+         */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px; /* Prevents extreme width on large screens */
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px; /* Fixed base height */
+            max-height: 50vh; /* Responsive max height */
+            padding: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px; /* Smaller height for mobile */
+            }
+        }
+
+        /* Custom Scrollbar for elements */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+
+    <!-- Chosen Palette: Navy Blue (Trust/Legal), Amber/Gold (Premium/Gold Card), Slate (Professional Neutral) -->
+    <!-- Application Structure Plan: The SPA is designed as a linear but interactive "Executive Dashboard". 
+         1. Hero: Establishes context and persona.
+         2. Legal & Quota (Section): Side-by-side comparison tables. Essential for compliance.
+         3. SOP Transition (Section): Interactive tabs showing Before/After processes. Crucial for operations team training.
+         4. Recruitment Strategy (Section): Chart.js visualization of target universities, linked to specific industry needs.
+         5. Profit & Cross-sell (Section): Value chain layout demonstrating ROI.
+         6. Launch Checklist (Section): Interactive tool to track the 90-day launch progress.
+         This structure logically guides the internal team from "Understanding Rules" -> "Changing Operations" -> "Executing Strategy" -> "Making Profit". -->
+    <!-- Visualization & Content Choices: 
+         - Goal: Compare Blue/White collar rules -> Method: HTML Grid Table (NO SVG) -> Interaction: Hover highlights.
+         - Goal: Show SOP differences -> Method: Interactive Tabs -> Interaction: Click to toggle Blue vs. White collar SOPs.
+         - Goal: Visualize Target Universities for Recruitment -> Method: Bar Chart (Chart.js Canvas) -> Justification: Clearly ranks SE Asian univs to focus recruiters' efforts. (NO SVG/Mermaid).
+         - Goal: Track implementation -> Method: Interactive JS Checkboxes + Progress Bar -> Justification: Action-oriented tool for the PM. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Canvas (Chart.js) and standard HTML/CSS used for all visuals. -->
+</head>
+<body class="text-slate-800 antialiased pt-16">
+
+    <!-- Navigation -->
+    <nav class="bg-brand-dark text-white fixed w-full top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 font-bold text-xl tracking-wider flex items-center gap-2">
+                    <span class="text-brand-accent">■</span> 營運轉型計畫書
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4 text-sm font-medium">
+                        <a href="#compliance" class="hover:text-brand-accent px-3 py-2 transition-colors">法規與員額</a>
+                        <a href="#sop-shift" class="hover:text-brand-accent px-3 py-2 transition-colors">SOP轉型</a>
+                        <a href="#recruitment" class="hover:text-brand-accent px-3 py-2 transition-colors">招募策略</a>
+                        <a href="#business-model" class="hover:text-brand-accent px-3 py-2 transition-colors">獲利與交叉銷售</a>
+                        <a href="#checklist" class="hover:text-brand-accent px-3 py-2 transition-colors">啟動清單</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white border-b border-slate-200 py-12 lg:py-20 relative overflow-hidden">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-brand-primary opacity-5 blur-3xl"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="max-w-3xl">
+                <p class="text-brand-accent font-semibold tracking-wide text-sm uppercase mb-2">Internal Strategy Document V1.0</p>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-dark leading-tight mb-4">
+                    佈局外籍白領市場：<br>
+                    <span class="text-brand-primary">從藍領仲介到全方位跨國獵才</span>
+                </h1>
+                <p class="text-lg text-brand-muted mb-6 leading-relaxed">
+                    本計畫書由資深商業法律與營運顧問擬定。因應 2026 新制上路（含勞退新制、留才久用方案）與台灣長期缺工趨勢，針對公司既有優勢，制定合法、精準、高效的「外籍白領人才（專業人員）」拓展策略。
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-3 py-1 bg-slate-100 text-slate-600 text-sm font-medium rounded-md border border-slate-200">機密等級：內部營運專用</span>
+                    <span class="px-3 py-1 bg-amber-50 text-amber-700 text-sm font-medium rounded-md border border-amber-200">對準最新法規 (2025/2026)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+
+        <!-- 1. 法規與員額限制對照 -->
+        <section id="compliance" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                    <span class="text-brand-primary text-xl">01 |</span> 藍領 vs. 白領仲介：法規與員額限制對照
+                </h2>
+                <p class="text-brand-muted leading-relaxed">
+                    本區塊解析《就業服務法》（藍領主戰場）與《外國專業人才延攬及僱用法》（白領專法）的核心差異。白領市場最大的優勢在於<b>「無名額配比限制」</b>，但門檻轉移至<b>「雇主資本額」</b>與<b>「外國人薪資/學歷」</b>。業務開發時，必須精準篩選符合資格的企業。
+                </p>
+            </div>
+
+            <div class="overflow-x-auto glass-card rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-brand-primary text-white">
+                            <th class="p-4 font-semibold w-1/5">比較維度</th>
+                            <th class="p-4 font-semibold w-2/5 border-r border-blue-800">藍領移工 (就服法 第46條第1項第8-10款)</th>
+                            <th class="p-4 font-semibold w-2/5">白領專業人才 (專法 & 就服法 第46條第1項第1款)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-medium text-brand-dark bg-slate-50">法規導向</td>
+                            <td class="p-4 text-sm text-slate-600 border-r border-slate-200">補充性原則，保障本國勞工。防弊重於興利。</td>
+                            <td class="p-4 text-sm text-brand-primary font-medium">延攬性原則，提升國家競爭力。興利重於防弊。</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-medium text-brand-dark bg-slate-50">雇主資格限制</td>
+                            <td class="p-4 text-sm text-slate-600 border-r border-slate-200">須屬特定行業（如 3K 產業、特定製造業等），並經工業局等機關認定。</td>
+                            <td class="p-4 text-sm text-slate-600">
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>設立未滿1年：資本額 ≧ 500萬 或 營業額 ≧ 1,000萬</li>
+                                    <li>設立滿1年以上：近1年或前3年平均營業額 ≧ 1,000萬</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-medium text-brand-dark bg-slate-50">員額限制 (Quotas)</td>
+                            <td class="p-4 text-sm text-slate-600 border-r border-slate-200">嚴格的 <b>3K5級制</b>（10%, 15%, 20%, 25%, 35%）加上 Extragalactic (Extra) 配額。</td>
+                            <td class="p-4 text-sm text-brand-accent font-bold bg-amber-50/30">
+                                幾乎無員額配比限制。<br>
+                                <span class="text-xs text-slate-500 font-normal">只要雇主與外國人資格符合，即無硬性人數上限。</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-medium text-brand-dark bg-slate-50">外國人資格門檻</td>
+                            <td class="p-4 text-sm text-slate-600 border-r border-slate-200">無特殊學歷限制，需符合健康檢查與年齡規定。</td>
+                            <td class="p-4 text-sm text-slate-600">
+                                雙軌制：<br>
+                                1. <b>一般制</b>：大學畢業 + 2年工作經驗 + 月薪 ≧ 47,971元。<br>
+                                2. <b>僑外生評點制</b>：滿 70 點 (學歷、薪資、語文等)，<span class="text-brand-accent">免工作經驗，薪資彈性。</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-medium text-brand-dark bg-slate-50">2026/2025 最新法規動態</td>
+                            <td class="p-4 text-sm text-slate-600 border-r border-slate-200">留才久用方案：資深移工可轉中階技術人力（不占原3K配額）。</td>
+                            <td class="p-4 text-sm text-slate-800">
+                                1. <b>2026起適用勞退新制</b>（無須等拿到永久居留）。<br>
+                                2. <b>永久居留放寬</b>：特專人才最快1年；副學士以上僑外生可折抵1-3年。
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 2. SOP 轉型 -->
+        <section id="sop-shift" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                    <span class="text-brand-primary text-xl">02 |</span> 營運作業流程 (SOP) 轉型對照
+                </h2>
+                <p class="text-brand-muted leading-relaxed">
+                    傳統藍領仲介的痛點在於「重度勞力密集的後端管理（如宿舍、生活照顧）」。轉型白領市場，核心能力必須從「體力活」轉向「腦力活」，專注於資格審查、合約談判與稅務/法規諮詢。請團隊特別留意以下作業模式的變更。
+                </p>
+            </div>
+
+            <div class="glass-card rounded-xl p-6">
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-200 mb-6">
+                    <button class="tab-btn active px-6 py-3 text-sm font-medium text-slate-500 hover:text-brand-dark focus:outline-none" onclick="switchTab('sop-blue')">現行藍領 SOP (重勞力)</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-medium text-slate-500 hover:text-brand-dark focus:outline-none" onclick="switchTab('sop-white')">未來白領 SOP (重諮詢)</button>
+                </div>
+
+                <!-- Tab Content: Blue -->
+                <div id="sop-blue" class="tab-content active space-y-4">
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <div class="text-slate-400 font-bold mb-2">01 招募階段</div>
+                            <p class="text-sm">依賴國外在地仲介（Broker）大批引進。求職者不挑雇主，看重加班費。</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <div class="text-slate-400 font-bold mb-2">02 文件與送件</div>
+                            <p class="text-sm">須經過地方政府無違反勞工法令證明、工業局函等繁瑣前置。大量實體文件遞送勞動部直聘中心。</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <div class="text-slate-400 font-bold mb-2">03 後續管理</div>
+                            <p class="text-sm text-red-600 font-medium">高強度勞力負荷。</p>
+                            <p class="text-sm mt-1">需處理宿舍檢查、外國人入國3日健檢、半年/18個月定期健檢、突發勞資爭議通報及逃逸通報等。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: White -->
+                <div id="sop-white" class="tab-content space-y-4">
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="text-brand-primary font-bold mb-2">01 招募階段 (精準對接)</div>
+                            <p class="text-sm">透過 LinkedIn, 大學職涯中心、數位獵才平台主動出擊。求職者重視職涯發展與企業文化，需進行雙向面試媒合。</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="text-brand-primary font-bold mb-2">02 文件與送件 (數位化)</div>
+                            <p class="text-sm">全面採用<span class="font-semibold">「外國專業人員工作許可申辦網」</span>線上傳輸。核心重點在於審核：畢業證書(需驗證)、薪資扣繳憑單、雇主401報表。</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="text-brand-primary font-bold mb-2">03 後續管理 (顧問化)</div>
+                            <p class="text-sm text-green-700 font-medium">大幅減輕勞力，轉向安頓服務。</p>
+                            <p class="text-sm mt-1">無須強制提供宿舍或定期健檢。服務轉為：協助辦理健保、2026勞退新制說明、眷屬依親簽證、所得稅申報輔導。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 招募策略與產業 -->
+        <section id="recruitment" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                    <span class="text-brand-primary text-xl">03 |</span> 招募渠道策略與產業佈局
+                </h2>
+                <p class="text-brand-muted leading-relaxed">
+                    台灣「電子業、傳統製造業、機械加工業」面臨工程師與中階管理層斷層。我們將鎖定東南亞頂尖大學（全球前 1500 名）畢業生，利用「評點制」與「2026 就業金卡/永久居留鬆綁」作為誘因，建立專屬人才庫。以下為東南亞目標名校排名數據（可作為獵才標靶）。
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-5 gap-8">
+                <!-- Text Strategy -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-brand-dark mb-3">目標產業與人才畫像</h3>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li class="flex items-start">
+                                <span class="text-brand-accent mr-2">◆</span>
+                                <div><strong class="text-slate-800">電子科技業：</strong> 需東南亞語雙語系（如越語、泰語）工程師，作為未來東南亞擴廠的儲備幹部。</div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-brand-accent mr-2">◆</span>
+                                <div><strong class="text-slate-800">機械加工/傳統製造：</strong> 需自動化設備維護、製程整合工程師。</div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-brand-dark mb-3">白領專屬招募渠道</h3>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <p><strong>1. 校園直航 (Campus Recruiting):</strong> 針對右側名牌大學，建立實習生（Intern）合作專案，利用「在學工讀」轉「畢業評點制留台」。</p>
+                            <p><strong>2. 數位獵才:</strong> 棄用傳統藍領 Facebook 社團，轉向 LinkedIn 經營雇主品牌，並使用 CakeResume, 104 Foreigners 平台。</p>
+                            <p><strong>3. 政府資源:</strong> 註冊 Contact TAIWAN 企業帳號，參加國家發展委員會海外攬才團。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Visualization -->
+                <div class="lg:col-span-3 glass-card rounded-xl p-4 sm:p-6 flex flex-col justify-center">
+                    <h3 class="font-bold text-center text-slate-700 mb-2">東南亞標竿大學 QS 全球排名 (獵才目標靶區)</h3>
+                    <p class="text-xs text-center text-slate-400 mb-4">名次越小越靠前，建議優先鎖定全球前 500 名校院之理工科系畢業生。</p>
+                    
+                    <!-- CRITICAL: Chart Container defined here -->
+                    <div class="chart-container">
+                        <canvas id="univChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 獲利模式與交叉銷售 -->
+        <section id="business-model" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                    <span class="text-brand-primary text-xl">04 |</span> 獲利模式與交叉銷售 (Cross-selling)
+                </h2>
+                <p class="text-brand-muted leading-relaxed">
+                    本公司的最大優勢在於<b>「已有龐大的藍領雇主客戶群」</b>。這批客戶正是缺工海嘯的重災區。我們不必從零開發冷客，而是對現有客戶進行「向上銷售」，解決他們從產線到辦公室的全面缺工問題。
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 獲利結構 -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                    <div class="bg-brand-primary text-white p-4 font-bold text-center">白領仲介多元獲利矩陣</div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="font-medium text-slate-700">A. 高階獵才媒合費 (Placement Fee)</span>
+                            <span class="text-brand-accent font-bold">年薪之 15% - 20%</span>
+                        </div>
+                        <p class="text-xs text-slate-500 pb-2">依法規(就服法)，向雇主收取登記費及介紹費。為白領業務最大利潤來源。</p>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="font-medium text-slate-700">B. 法規諮詢與代辦費 (Visa/Permit)</span>
+                            <span class="text-brand-accent font-bold">NT$ 15,000 - 30,000 /件</span>
+                        </div>
+                        <p class="text-xs text-slate-500 pb-2">處理工作許可、就業金卡申請、勞動契約多語版擬定、評點制計算與佐證收集。</p>
+
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="font-medium text-slate-700">C. 落地安頓包 (Relocation Package)</span>
+                            <span class="text-brand-accent font-bold">專案報價</span>
+                        </div>
+                        <p class="text-xs text-slate-500">協助找房、開戶、眷屬依親簽證、2026勞退新制/租稅優惠申報教學等軟性服務。</p>
+                    </div>
+                </div>
+
+                <!-- 交叉銷售 -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white relative">
+                    <div class="absolute right-0 top-0 text-9xl text-slate-50 opacity-50 select-none">⇄</div>
+                    <div class="bg-brand-dark text-white p-4 font-bold text-center relative z-10">現有藍領客戶 Cross-selling 腳本</div>
+                    <div class="p-6 space-y-5 relative z-10">
+                        <div class="bg-slate-50 p-4 rounded border-l-4 border-slate-300">
+                            <div class="text-xs text-slate-500 mb-1">場景 1：客戶抱怨基層主管不足</div>
+                            <div class="font-medium text-sm text-brand-dark">「陳董，您廠裡有 50 個越南移工，但台籍幹部管不動。我們可以幫您從越南名校引進『會說中文的理工畢業生』，以白領身分聘僱，擔任廠務管理，解決溝通與產能瓶頸。」</div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded border-l-4 border-amber-300">
+                            <div class="text-xs text-slate-500 mb-1">場景 2：客戶面臨藍領年限到期</div>
+                            <div class="font-medium text-sm text-brand-dark">「王總，這批熟練技工年限快到了。我們除了引進新勞工，也能幫您辦理『中階技術人力（留才久用）』免除名額限制，甚至挑選優秀者輔導進修，未來轉白領技術職。」</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 營運啟動清單 -->
+        <section id="checklist" class="scroll-mt-24 mb-20">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                    <span class="text-brand-primary text-xl">05 |</span> 專案啟動合規清單 (首 90 日)
+                </h2>
+                <p class="text-brand-muted leading-relaxed">
+                    確保業務合法合規是首要任務。請專案經理依據以下清單逐步落實，進度會自動計算。
+                </p>
+            </div>
+
+            <div class="glass-card rounded-xl p-6">
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm font-medium text-brand-dark mb-1">
+                        <span>執行進度</span>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-brand-accent h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Phase 1 -->
+                    <div>
+                        <h3 class="font-bold text-lg text-brand-primary mb-3 border-b border-slate-200 pb-2">Phase 1: 法律與系統就緒 (Month 1)</h3>
+                        <div class="space-y-3 pl-2">
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">確認公司具備「私立就業服務機構許可證」，並檢視營業項目是否涵蓋高階獵才。</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">於勞動部「外國專業人員工作許可申辦網」完成仲介機構帳號註冊與憑證綁定。</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">法務更新定型化契約，納入白領收費標準、退費機制（需符合就服法收費標準）。</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div>
+                        <h3 class="font-bold text-lg text-brand-primary mb-3 border-b border-slate-200 pb-2">Phase 2: 團隊與人才庫建置 (Month 2)</h3>
+                        <div class="space-y-3 pl-2">
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">招募具備英文能力之 IT / 製造業專案招募顧問 (Recruitment Consultant) 1-2名。</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">建立內部知識庫：彙整 2026 勞退新制說明、僑外生評點表、就業金卡申請 SOP。</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">開發海外名單：與印尼 UI、馬來西亞 UM、越南 VNU 等重點大學校友會建立聯繫。</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div>
+                        <h3 class="font-bold text-lg text-brand-primary mb-3 border-b border-slate-200 pb-2">Phase 3: 業務推展 (Month 3)</h3>
+                        <div class="space-y-3 pl-2">
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">篩選現有藍領客戶（資本額>500萬且為電子/傳產製造），選定 20 家進行陌生開發(Cold Pitch)。</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" class="task-check mt-1 w-4 h-4 text-brand-primary rounded border-slate-300 focus:ring-brand-primary" onchange="updateProgress()">
+                                <span class="text-slate-700 group-hover:text-brand-dark transition-colors">製作針對雇主的「外籍白領聘僱懶人包」簡報（強調免抽籤、不佔 3K 配額）。</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-brand-dark text-slate-400 py-8 text-center text-sm border-t border-slate-800">
+        <p>© 2026 HR Operations Strategy & Legal Consulting. All rights reserved.</p>
+        <p class="mt-2 text-xs">資料依據：最新勞動部解釋令、國家發展委員會《外國專業人才延攬及僱用法》(2026年生效條款)。</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Tab Switching Logic ---
+        function switchTab(tabId) {
+            // Remove active classes
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active to clicked
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // --- 2. Checklist Progress Logic ---
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.task-check');
+            const total = checkboxes.length;
+            const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            const percentage = Math.round((checked / total) * 100);
+            
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').innerText = percentage + '%';
+            
+            // Optional: visual feedback when 100%
+            if (percentage === 100) {
+                document.getElementById('progress-bar').classList.remove('bg-brand-accent');
+                document.getElementById('progress-bar').classList.add('bg-green-500');
+            } else {
+                document.getElementById('progress-bar').classList.add('bg-brand-accent');
+                document.getElementById('progress-bar').classList.remove('bg-green-500');
+            }
+        }
+
+        // --- 3. Chart.js Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('univChart').getContext('2d');
+            
+            // Data extracted from the provided CSV for Top SE Asian Universities (QS 2026 Rankings)
+            const univData = {
+                labels: [
+                    '新加坡國立大學 (NUS)', 
+                    '馬來亞大學 (UM)', 
+                    '印尼大學 (UI)', 
+                    '朱拉隆功大學 (泰國)', 
+                    '越南國家大學 (VNU)'
+                ],
+                datasets: [{
+                    label: 'QS 全球排名 (2026)',
+                    // Values: 8, 58, 189, 229, 501 (Using 500 for visualization of range 501-510)
+                    data: [8, 58, 189, 229, 501],
+                    backgroundColor: [
+                        'rgba(30, 58, 138, 0.8)',   // brand-primary
+                        'rgba(217, 119, 6, 0.8)',   // brand-accent
+                        'rgba(100, 116, 139, 0.8)', // slate-500
+                        'rgba(148, 163, 184, 0.8)', // slate-400
+                        'rgba(203, 213, 225, 0.8)'  // slate-300
+                    ],
+                    borderColor: [
+                        'rgb(30, 58, 138)',
+                        'rgb(217, 119, 6)',
+                        'rgb(100, 116, 139)',
+                        'rgb(148, 163, 184)',
+                        'rgb(203, 213, 225)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: univData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Critical for custom container sizing
+                    indexAxis: 'y', // Horizontal bar chart for better label readability
+                    plugins: {
+                        legend: {
+                            display: false // Hide legend as title explains it
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.raw;
+                                    if(val === 501) return ' 排名: 501-510區間';
+                                    return ' 排名: ' + val;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            // Reverse the scale so #1 is on the right/longest bar conceptually, 
+                            // OR keep standard but remind user lower is better. We will keep standard.
+                            title: {
+                                display: true,
+                                text: 'QS 世界排名 (數字越小名次越高)'
+                            },
+                            suggestedMax: 600
+                        },
+                        y: {
+                            ticks: {
+                                font: {
+                                    family: "'Inter', 'Noto Sans TC', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            new Chart(ctx, config);
+        });
+    </script>
+</body>
+</html>
